@@ -1,6 +1,34 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Rule Studio, Archive Registry & System Health", () => {
+  test.beforeAll(async ({ request }) => {
+    const loginRes = await request.post("/api/auth/login", {
+      data: { password: "admin123" },
+    });
+    expect(loginRes.ok()).toBeTruthy();
+
+    const reportText = `Executive Summary
+Archive test verification report.
+Milestone Progress Matrix
+Milestone A - 100%
+Risk Register
+No open risks.
+Financial Expenditure Log
+Budget variance: 3%.
+Quality Assurance Sign-off
+QA verified.`;
+
+    await request.post("/api/reports", {
+      multipart: {
+        file: {
+          name: "Archive_Test_Report.txt",
+          mimeType: "text/plain",
+          buffer: Buffer.from(reportText, "utf-8"),
+        },
+      },
+    });
+  });
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/login");
     await page.locator('input[type="password"]').fill("admin123");
@@ -59,13 +87,13 @@ test.describe("Rule Studio, Archive Registry & System Health", () => {
     await expect(page.locator("text=Saved v")).toBeVisible({ timeout: 10000 });
   });
 
-  test("TC-13: System Health renders SQLite WAL telemetry and audit log history", async ({
+  test("TC-13: System Health renders PostgreSQL telemetry and audit log history", async ({
     page,
   }) => {
     await page.goto("/settings");
 
     await expect(page.locator("h1")).toContainText("System Health & Audit Logs");
-    await expect(page.locator("text=SQLite (WAL)")).toBeVisible();
+    await expect(page.getByText("PostgreSQL 16", { exact: true })).toBeVisible();
     await expect(page.locator("text=Operator Audit Trail")).toBeVisible();
 
     // Check table has entries

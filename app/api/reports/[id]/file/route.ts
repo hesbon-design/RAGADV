@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { sql, initDatabase } from "@/lib/db";
 import fs from "fs";
 import path from "path";
 
@@ -14,20 +14,21 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    await initDatabase();
+
     const { id } = await params;
 
-    const report = db
-      .prepare(`
-        SELECT filename, storage_path 
-        FROM reports 
-        WHERE id = ? AND deleted_at IS NULL
-      `)
-      .get(id) as { filename: string; storage_path: string } | undefined;
+    const reports = await sql`
+      SELECT filename, storage_path 
+      FROM reports 
+      WHERE id = ${id} AND deleted_at IS NULL
+    `;
 
-    if (!report || !fs.existsSync(report.storage_path)) {
+    if (reports.length === 0 || !fs.existsSync(reports[0].storage_path)) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
+    const report = reports[0];
     const fileBuffer = await fs.promises.readFile(report.storage_path);
     const ext = path.extname(report.filename).toLowerCase();
 

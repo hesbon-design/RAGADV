@@ -1,0 +1,22 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: ragadv_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ragadv
+      POSTGRES_PASSWORD: ragadv_dev_password
+      POSTGRES_DB: ragadv
+    ports:
+      - "5432:5432"
+    volumes:
+      - ragadv_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ragadv -d ragadv"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ragadv_pgdata:
+    name: ragadv_pgdata

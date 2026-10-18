@@ -1,52 +1,68 @@
 import * as React from "react";
-import { db } from "@/lib/db";
+import { sql, initDatabase } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Activity,
   HardDrive,
   ShieldCheck,
   Cpu,
-  Clock,
   Layers,
   FileCheck2,
 } from "lucide-react";
 
-export default function SettingsPage() {
-  const reportsCount = db.prepare("SELECT COUNT(*) as count FROM reports WHERE deleted_at IS NULL").get() as { count: number };
-  const scorecardsMetrics = db.prepare(`
+export const instant = false;
+
+export default async function SettingsPage() {
+  await initDatabase();
+
+  const reportCountRows = await sql<Array<{ count: number }>>`
+    SELECT COUNT(*)::int as count FROM reports WHERE deleted_at IS NULL
+  `;
+  const reportsCount = reportCountRows[0]?.count ?? 0;
+
+  const scorecardsMetricsRows = await sql<
+    Array<{
+      total_scorecards: number;
+      avg_latency: number;
+      total_tokens: number;
+    }>
+  >`
     SELECT 
-      COUNT(*) as total_scorecards,
-      COALESCE(AVG(latency_ms), 0) as avg_latency,
-      COALESCE(SUM(input_tokens + output_tokens), 0) as total_tokens
+      COUNT(*)::int as total_scorecards,
+      COALESCE(AVG(latency_ms), 0)::float as avg_latency,
+      COALESCE(SUM(input_tokens + output_tokens), 0)::int as total_tokens
     FROM scorecards
     WHERE deleted_at IS NULL
-  `).get() as {
-    total_scorecards: number;
-    avg_latency: number;
-    total_tokens: number;
+  `;
+
+  const scorecardsMetrics = scorecardsMetricsRows[0] || {
+    total_scorecards: 0,
+    avg_latency: 0,
+    total_tokens: 0,
   };
 
-  const auditLogs = db.prepare(`
+  const auditLogs = await sql<
+    Array<{
+      id: string;
+      department_id: string | null;
+      action: string;
+      metadata: unknown;
+      timestamp: string;
+    }>
+  >`
     SELECT id, department_id, action, metadata, timestamp
     FROM audit_logs
     ORDER BY timestamp DESC
     LIMIT 20
-  `).all() as Array<{
-    id: string;
-    department_id: string | null;
-    action: string;
-    metadata: string | null;
-    timestamp: string;
-  }>;
+  `;
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">System Health & Audit Logs</h1>
         <p className="text-sm text-muted-foreground">
-          Local SQLite storage engine, token consumption telemetry, and immutable audit trail.
+          PostgreSQL 16 + pgvector storage engine, token consumption telemetry, and immutable audit trail.
         </p>
       </div>
 
@@ -60,8 +76,8 @@ export default function SettingsPage() {
             <HardDrive className="size-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold font-mono">SQLite (WAL)</div>
-            <p className="text-xs text-muted-foreground mt-1">High-concurrency local storage</p>
+            <div className="text-lg font-bold font-mono">PostgreSQL 16</div>
+            <p className="text-xs text-muted-foreground mt-1">pgvector + Docker / Cloud Parity</p>
           </CardContent>
         </Card>
 
@@ -73,7 +89,7 @@ export default function SettingsPage() {
             <FileCheck2 className="size-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-mono">{reportsCount.count}</div>
+            <div className="text-2xl font-bold font-mono">{reportsCount}</div>
             <p className="text-xs text-muted-foreground mt-1">Active document records</p>
           </CardContent>
         </Card>
@@ -87,7 +103,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono">
-              {(scorecardsMetrics.avg_latency / 1000).toFixed(2)}s
+              {(Number(scorecardsMetrics.avg_latency) / 1000).toFixed(2)}s
             </div>
             <p className="text-xs text-muted-foreground mt-1">Parsing + rule evaluation</p>
           </CardContent>
@@ -102,7 +118,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold font-mono">
-              {scorecardsMetrics.total_tokens.toLocaleString()}
+              {Number(scorecardsMetrics.total_tokens).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Lifetime inference tokens</p>
           </CardContent>
@@ -137,10 +153,14 @@ export default function SettingsPage() {
               <TableBody>
                 {auditLogs.map((log) => {
                   let parsedMeta: Record<string, unknown> = {};
-                  try {
-                    parsedMeta = JSON.parse(log.metadata || "{}");
-                  } catch {
-                    parsedMeta = {};
+                  if (typeof log.metadata === "object" && log.metadata !== null) {
+                    parsedMeta = log.metadata as Record<string, unknown>;
+                  } else if (typeof log.metadata === "string") {
+                    try {
+                      parsedMeta = JSON.parse(log.metadata);
+                    } catch {
+                      parsedMeta = {};
+                    }
                   }
 
                   return (

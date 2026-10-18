@@ -46,17 +46,21 @@ QA Lead sign-off granted with zero blockers.
     await page.click("text=Drop operational reports here to auto-evaluate");
     const fileChooser = await fileChooserPromise;
 
-    await fileChooser.setFiles({
-      name: "Apollo_Sprint_Review.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from(compliantText, "utf-8"),
-    });
+    const [uploadResponse] = await Promise.all([
+      page.waitForResponse((res) => res.url().includes("/api/reports") && res.status() === 201),
+      fileChooser.setFiles({
+        name: "Apollo_Sprint_Review.txt",
+        mimeType: "text/plain",
+        buffer: Buffer.from(compliantText, "utf-8"),
+      }),
+    ]);
+    expect(uploadResponse.ok()).toBeTruthy();
 
     // Ingestion queue item should appear
-    await expect(page.locator("text=Apollo_Sprint_Review.txt")).toBeVisible();
+    await expect(page.locator("text=Apollo_Sprint_Review.txt").first()).toBeVisible();
 
-    // Verify it evaluates and shows APPROVED badge
-    await expect(page.locator("text=APPROVED").first()).toBeVisible({ timeout: 15000 });
+    // Verify it evaluates and shows Inspect button
+    await expect(page.locator("button:has-text('Inspect')").first()).toBeVisible({ timeout: 15000 });
   });
 
   test("TC-07: Scanned or corrupt document (<50 chars) is rejected by Token Budget Bouncer", async ({

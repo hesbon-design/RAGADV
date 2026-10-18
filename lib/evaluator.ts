@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import { sql, initDatabase } from "@/lib/db";
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
@@ -43,43 +43,42 @@ export async function evaluateReport(
   ruleProfileVersionId?: string
 ): Promise<EvaluationResult> {
   const startTime = Date.now();
+  await initDatabase();
 
   // 1. Fetch Department & Default Rule Profile Version if not provided
-  let versionRow: {
+  let versionRows: Array<{
     id: string;
-    mandatory_sections: string;
-    threshold_rules: string;
-    red_flag_keywords: string;
-    custom_rule_cards: string;
-  } | undefined;
+    mandatory_sections: unknown;
+    threshold_rules: unknown;
+    red_flag_keywords: unknown;
+    custom_rule_cards: unknown;
+  }> = [];
 
   if (ruleProfileVersionId) {
-    versionRow = db
-      .prepare("SELECT * FROM rule_profile_versions WHERE id = ?")
-      .get(ruleProfileVersionId) as typeof versionRow;
+    versionRows = await sql`SELECT * FROM rule_profile_versions WHERE id = ${ruleProfileVersionId}`;
   } else {
-    // Fetch active department's default rule profile version
-    versionRow = db
-      .prepare(`
-        SELECT v.* 
-        FROM departments d
-        JOIN rule_profiles p ON d.default_rule_profile_id = p.id
-        JOIN rule_profile_versions v ON p.id = v.rule_profile_id
-        WHERE d.id = ?
-        ORDER BY v.version_number DESC
-        LIMIT 1
-      `)
-      .get(departmentId) as typeof versionRow;
+    versionRows = await sql`
+      SELECT v.* 
+      FROM departments d
+      JOIN rule_profiles p ON d.default_rule_profile_id = p.id
+      JOIN rule_profile_versions v ON p.id = v.rule_profile_id
+      WHERE d.id = ${departmentId}
+      ORDER BY v.version_number DESC
+      LIMIT 1
+    `;
   }
 
-  // Fallback if no version found
-  if (!versionRow) {
-    versionRow = db
-      .prepare("SELECT * FROM rule_profile_versions ORDER BY created_at DESC LIMIT 1")
-      .get() as typeof versionRow;
+  if (versionRows.length === 0) {
+    versionRows = await sql`SELECT * FROM rule_profile_versions ORDER BY created_at DESC LIMIT 1`;
   }
 
-  const mandatorySections: string[] = JSON.parse(versionRow?.mandatory_sections || "[]");
+  const versionRow = versionRows[0];
+  const mandatorySections: string[] = Array.isArray(versionRow?.mandatory_sections)
+    ? (versionRow.mandatory_sections as string[])
+    : typeof versionRow?.mandatory_sections === "string"
+    ? JSON.parse(versionRow.mandatory_sections)
+    : [];
+
   const thresholdRules: Array<{
     id: string;
     metric_name: string;
@@ -88,15 +87,43 @@ export async function evaluateReport(
     unit: string;
     penalty: number;
     is_critical: boolean;
-  }> = JSON.parse(versionRow?.threshold_rules || "[]");
-  const redFlagKeywords: string[] = JSON.parse(versionRow?.red_flag_keywords || "[]");
+  }> = Array.isArray(versionRow?.threshold_rules)
+    ? (versionRow.threshold_rules as Array<{
+        id: string;
+        metric_name: string;
+        operator: string;
+        target_value: number;
+        unit: string;
+        penalty: number;
+        is_critical: boolean;
+      }>)
+    : typeof versionRow?.threshold_rules === "string"
+    ? JSON.parse(versionRow.threshold_rules)
+    : [];
+
+  const redFlagKeywords: string[] = Array.isArray(versionRow?.red_flag_keywords)
+    ? (versionRow.red_flag_keywords as string[])
+    : typeof versionRow?.red_flag_keywords === "string"
+    ? JSON.parse(versionRow.red_flag_keywords)
+    : [];
+
   const customRuleCards: Array<{
     id: string;
     title: string;
     description: string;
     weight: number;
     severity: string;
-  }> = JSON.parse(versionRow?.custom_rule_cards || "[]");
+  }> = Array.isArray(versionRow?.custom_rule_cards)
+    ? (versionRow.custom_rule_cards as Array<{
+        id: string;
+        title: string;
+        description: string;
+        weight: number;
+        severity: string;
+      }>)
+    : typeof versionRow?.custom_rule_cards === "string"
+    ? JSON.parse(versionRow.custom_rule_cards)
+    : [];
 
   const apiKey = process.env.GEMINI_API_KEY;
 

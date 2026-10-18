@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { sql, initDatabase } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,13 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-export default function DashboardPage() {
-  // Query recent reports and scorecards from SQLite
-  const reports = db.prepare(`
+export const instant = false;
+
+export default async function DashboardPage() {
+  await initDatabase();
+
+  // Query recent reports and scorecards from PostgreSQL
+  const reports = await sql`
     SELECT 
       r.id,
       r.filename,
@@ -36,17 +40,7 @@ export default function DashboardPage() {
     WHERE r.deleted_at IS NULL
     ORDER BY r.uploaded_at DESC
     LIMIT 10
-  `).all() as Array<{
-    id: string;
-    filename: string;
-    review_status: string;
-    uploaded_at: string;
-    page_count: number;
-    department_name: string;
-    scorecard_id: string | null;
-    overall_score: number | null;
-    compliance_status: string | null;
-  }>;
+  `;
 
   const totalCount = reports.length;
   const approvedCount = reports.filter((r) => r.compliance_status === "APPROVED").length;

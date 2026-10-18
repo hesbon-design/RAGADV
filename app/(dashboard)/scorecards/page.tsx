@@ -1,6 +1,6 @@
 import * as React from "react";
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { sql, initDatabase } from "@/lib/db";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,14 @@ import {
   XCircle,
   Clock,
   ArrowUpRight,
-  Filter,
 } from "lucide-react";
 
-export default function ScorecardsPage() {
-  const reports = db.prepare(`
+export const instant = false;
+
+export default async function ScorecardsPage() {
+  await initDatabase();
+
+  const reports = await sql`
     SELECT 
       r.id,
       r.filename,
@@ -34,19 +37,7 @@ export default function ScorecardsPage() {
     LEFT JOIN scorecards s ON r.id = s.report_id
     WHERE r.deleted_at IS NULL
     ORDER BY r.uploaded_at DESC
-  `).all() as Array<{
-    id: string;
-    filename: string;
-    review_status: string;
-    uploaded_at: string;
-    reviewed_at: string;
-    page_count: number;
-    department_name: string;
-    scorecard_id: string | null;
-    overall_score: number | null;
-    compliance_status: string | null;
-    latency_ms: number | null;
-  }>;
+  `;
 
   return (
     <div className="space-y-6 animate-fadeIn">
