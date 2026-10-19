@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { UploadTriggerButton } from "@/components/dashboard/upload-trigger-button";
 import { Zap } from "lucide-react";
 
 export function Header() {
@@ -43,10 +42,10 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border/40 bg-background/80 px-6 backdrop-blur-md">
-      <div className="flex items-center gap-4">
-        <UploadTriggerButton size="sm" className="h-8 gap-1.5 text-xs font-semibold">
-          Upload
-        </UploadTriggerButton>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-muted-foreground">
+          Hey, <span className="font-semibold text-foreground">Hesbo</span>
+        </span>
       </div>
 
       <div className="flex items-center gap-4">

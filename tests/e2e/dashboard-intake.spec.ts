@@ -9,16 +9,12 @@ test.describe("Dashboard Metrics & Intake Dropzone", () => {
     await page.waitForURL("**/dashboard");
   });
 
-  test("TC-05: Dashboard renders core operational metric cards and dropzone modal", async ({ page }) => {
+  test("TC-05: Dashboard renders core operational metric cards", async ({ page }) => {
     await expect(page.locator("h1")).toContainText("Dashboard");
     await expect(page.locator("text=Total Audited")).toBeVisible();
     await expect(page.getByText("Approved", { exact: true })).toBeVisible();
     await expect(page.locator("text=Action Required")).toBeVisible();
     await expect(page.locator("text=Critical Rejections")).toBeVisible();
-
-    // Click upload to open intake modal
-    await page.locator("button:has-text('Upload')").first().click();
-    await expect(page.locator("text=Drop operational reports here to auto-evaluate")).toBeVisible();
   });
 
   test("TC-06: Uploading compliant document via file picker triggers automated review", async ({
@@ -44,8 +40,9 @@ Quality Assurance Sign-off
 QA Lead sign-off granted with zero blockers.
 `;
 
-    // Open upload modal
-    await page.locator("button:has-text('Upload')").first().click();
+    // Navigate to scorecards and open upload modal
+    await page.goto("/scorecards");
+    await page.locator("button:has-text('Upload New Document')").click();
 
     // Target the hidden file input inside dropzone modal
     const fileChooserPromise = page.waitForEvent("filechooser");
@@ -74,8 +71,9 @@ QA Lead sign-off granted with zero blockers.
   }) => {
     const corruptText = "Short scan";
 
-    // Open upload modal
-    await page.locator("button:has-text('Upload')").first().click();
+    // Navigate to scorecards and open upload modal
+    await page.goto("/scorecards");
+    await page.locator("button:has-text('Upload New Document')").click();
 
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");
@@ -100,8 +98,9 @@ QA Lead sign-off granted with zero blockers.
     // Generate text with 27,000 words (> 35,000 estimated tokens)
     const largeText = "Executive Summary\n" + "compliance metric variance ".repeat(9000);
 
-    // Open upload modal
-    await page.locator("button:has-text('Upload')").first().click();
+    // Navigate to scorecards and open upload modal
+    await page.goto("/scorecards");
+    await page.locator("button:has-text('Upload New Document')").click();
 
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");
@@ -129,8 +128,9 @@ Project is missing major matrices and financial sign-offs.
 Notes on current progress without required sections.
 `;
 
-    // Open upload modal
-    await page.locator("button:has-text('Upload')").first().click();
+    // Navigate to scorecards and open upload modal
+    await page.goto("/scorecards");
+    await page.locator("button:has-text('Upload New Document')").click();
 
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");
@@ -205,8 +205,9 @@ startxref
 628
 %%EOF`;
 
-    // Open upload modal
-    await page.locator("button:has-text('Upload')").first().click();
+    // Navigate to scorecards and open upload modal
+    await page.goto("/scorecards");
+    await page.locator("button:has-text('Upload New Document')").click();
 
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");

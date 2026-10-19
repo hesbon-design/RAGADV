@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UploadTriggerButton } from "@/components/dashboard/upload-trigger-button";
 import {
   FileText,
   CheckCircle2,
@@ -49,17 +48,14 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* Page Title & Actions */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Page Title */}
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
             Compliance triage and recent audit reports.
           </p>
         </div>
-        <UploadTriggerButton size="default" className="h-9">
-          Upload Report
-        </UploadTriggerButton>
       </div>
 
       {/* Metrics Row */}
@@ -145,11 +141,13 @@ export default async function DashboardPage() {
               <FileCheck2 className="size-10 mb-2 stroke-1 opacity-50" />
               <p className="text-sm font-medium">No reports evaluated yet</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Upload your first document to start automated review.
+                Head to Compliance Scorecards to upload and review documents.
               </p>
-              <UploadTriggerButton size="sm" variant="outline" className="mt-4">
-                Upload Document
-              </UploadTriggerButton>
+              <Link href="/scorecards" className="mt-4">
+                <Button variant="outline" size="sm">
+                  Go to Scorecards
+                </Button>
+              </Link>
             </div>
           ) : (
             <Table>
