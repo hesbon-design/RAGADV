@@ -17,6 +17,31 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ragadv_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://ragadv:ragadv_dev_password@db:5432/ragadv
+      ADMIN_PASSWORD: admin123
+      SESSION_SECRET: ragadv_secure_session_secret_min_32_characters_long_12345
+      STORAGE_DRIVER: local
+      STORAGE_LOCAL_PATH: /app/data/storage
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+    volumes:
+      - ragadv_storage:/app/data/storage
+
 volumes:
   ragadv_pgdata:
     name: ragadv_pgdata
+  ragadv_storage:
+    name: ragadv_storage

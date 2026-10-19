@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env.local
+.env*.local
+data/storage
+tests
+test-results
+npm-debug.log*
+doc
+docs

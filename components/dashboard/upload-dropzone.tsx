@@ -98,6 +98,9 @@ export function UploadDropzone({ onUploadComplete }: { onUploadComplete?: () => 
 
       router.refresh();
       onUploadComplete?.();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("ragadv:tokens-updated"));
+      }
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : "Document evaluation failed";
       setItems((prev) =>

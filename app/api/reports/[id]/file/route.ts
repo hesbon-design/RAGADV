@@ -4,6 +4,8 @@ import { sql, initDatabase } from "@/lib/db";
 import fs from "fs";
 import path from "path";
 
+import { fileExists, readStoredFile } from "@/lib/storage";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -24,12 +26,17 @@ export async function GET(
       WHERE id = ${id} AND deleted_at IS NULL
     `;
 
-    if (reports.length === 0 || !fs.existsSync(reports[0].storage_path)) {
+    if (reports.length === 0) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
     const report = reports[0];
-    const fileBuffer = await fs.promises.readFile(report.storage_path);
+    const exists = await fileExists(report.storage_path);
+    if (!exists) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    const fileBuffer = await readStoredFile(report.storage_path);
     const ext = path.extname(report.filename).toLowerCase();
 
     let contentType = "application/octet-stream";
@@ -41,7 +48,7 @@ export async function GET(
       contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     }
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       status: 200,
       headers: {
         "Content-Type": contentType,
