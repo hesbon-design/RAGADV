@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { sql, initDatabase } from "@/lib/db";
+import { ingestReportToArchive, purgeReportFromArchive } from "@/lib/archive";
 import crypto from "crypto";
 
 export async function POST(
@@ -67,6 +68,21 @@ export async function POST(
         )
       `;
     });
+
+    // Synchronize Knowledge Archive chunks
+    if (newStatus === "APPROVED") {
+      try {
+        await ingestReportToArchive(id);
+      } catch (archiveErr) {
+        console.error("Failed to auto-ingest overridden report into archive:", archiveErr);
+      }
+    } else {
+      try {
+        await purgeReportFromArchive(id);
+      } catch (purgeErr) {
+        console.error("Failed to purge non-approved report from archive:", purgeErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,

@@ -6,8 +6,9 @@ import { sessionOptions, SessionData } from "@/lib/session";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public assets and login endpoints
+  // Allow public landing page, assets, and login endpoints
   if (
+    pathname === "/" ||
     pathname === "/login" ||
     pathname.startsWith("/api/auth/login") ||
     pathname.startsWith("/_next") ||

@@ -5,6 +5,7 @@ import { parseDocument } from "@/lib/parsers";
 import { validateDocumentBudget } from "@/lib/budget";
 import { saveFile } from "@/lib/storage";
 import { evaluateReport } from "@/lib/evaluator";
+import { ingestReportToArchive } from "@/lib/archive";
 import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
@@ -258,6 +259,15 @@ export async function POST(request: NextRequest) {
         );
       `;
     });
+
+    // Auto-ingest into Knowledge Archive if report is APPROVED
+    if (evalResult.complianceStatus === "APPROVED") {
+      try {
+        await ingestReportToArchive(reportId, extracted.text);
+      } catch (archiveErr) {
+        console.error("Failed to auto-ingest approved report into archive:", archiveErr);
+      }
+    }
 
     return NextResponse.json(
       {

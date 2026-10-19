@@ -117,12 +117,13 @@ export async function initDatabase() {
       CREATE TABLE IF NOT EXISTS archive_chunks (
         id TEXT PRIMARY KEY,
         department_id TEXT NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
-        parent_report_id TEXT NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+        parent_report_id TEXT REFERENCES reports(id) ON DELETE CASCADE,
         doc_type TEXT NOT NULL CHECK(doc_type IN ('raw', 'reflection', 'summary')),
         content TEXT NOT NULL,
         reflection_score REAL DEFAULT 1.0,
         source_references JSONB,
         embedding vector(768),
+        fts_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', content)) STORED,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -137,9 +138,13 @@ export async function initDatabase() {
       );
     `;
 
+    await sql`ALTER TABLE archive_chunks ALTER COLUMN parent_report_id DROP NOT NULL;`.catch(() => {});
+    await sql`ALTER TABLE archive_chunks ADD COLUMN IF NOT EXISTS fts_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', content)) STORED;`;
     await sql`CREATE INDEX IF NOT EXISTS idx_reports_dept_status ON reports(department_id, review_status);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_archive_dept ON archive_chunks(department_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_archive_parent ON archive_chunks(parent_report_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_archive_fts ON archive_chunks USING GIN (fts_vector);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_archive_embedding ON archive_chunks USING hnsw (embedding vector_cosine_ops);`;
 
     // 3. Seed default department & starter profile if empty
     const deptRows = await sql`SELECT COUNT(*)::int as count FROM departments;`;
