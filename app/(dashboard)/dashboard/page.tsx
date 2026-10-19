@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UploadDropzone } from "@/components/dashboard/upload-dropzone";
+import { UploadTriggerButton } from "@/components/dashboard/upload-trigger-button";
 import {
   FileText,
   CheckCircle2,
@@ -49,14 +49,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* Page Title & Status */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+      {/* Page Title & Actions */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Review Command Center</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            Dropzone intake, pre-flight token guardrails, and compliance triage.
+            Compliance triage and recent audit reports.
           </p>
         </div>
+        <UploadTriggerButton size="default" className="h-9">
+          Upload Report
+        </UploadTriggerButton>
       </div>
 
       {/* Metrics Row */}
@@ -120,9 +123,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Interactive Upload Dropzone */}
-      <UploadDropzone />
-
       {/* Triage & Recent Scorecards */}
       <Card className="border-border/60 shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
@@ -145,8 +145,11 @@ export default async function DashboardPage() {
               <FileCheck2 className="size-10 mb-2 stroke-1 opacity-50" />
               <p className="text-sm font-medium">No reports evaluated yet</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Drop your first document in the upload box above to start automated review.
+                Upload your first document to start automated review.
               </p>
+              <UploadTriggerButton size="sm" variant="outline" className="mt-4">
+                Upload Document
+              </UploadTriggerButton>
             </div>
           ) : (
             <Table>

@@ -235,12 +235,7 @@ export function RuleStudio({ initialDepartment, initialProfile }: RuleStudioProp
       {/* Top Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">Compliance Rule Studio</h1>
-            <Badge variant="outline" className="font-mono text-xs">
-              v{latest?.version_number ?? 1}.0 Active
-            </Badge>
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Compliance Rule Studio</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Configure mandatory sections, numeric gates, and red-flag tripwires for{" "}
             <span className="font-semibold text-foreground">{initialDepartment.name}</span>.

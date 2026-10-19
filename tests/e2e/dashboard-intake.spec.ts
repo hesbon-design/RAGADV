@@ -9,12 +9,15 @@ test.describe("Dashboard Metrics & Intake Dropzone", () => {
     await page.waitForURL("**/dashboard");
   });
 
-  test("TC-05: Dashboard renders core operational metric cards and dropzone", async ({ page }) => {
-    await expect(page.locator("h1")).toContainText("Review Command Center");
+  test("TC-05: Dashboard renders core operational metric cards and dropzone modal", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("Dashboard");
     await expect(page.locator("text=Total Audited")).toBeVisible();
     await expect(page.getByText("Approved", { exact: true })).toBeVisible();
     await expect(page.locator("text=Action Required")).toBeVisible();
     await expect(page.locator("text=Critical Rejections")).toBeVisible();
+
+    // Click upload to open intake modal
+    await page.locator("button:has-text('Upload')").first().click();
     await expect(page.locator("text=Drop operational reports here to auto-evaluate")).toBeVisible();
   });
 
@@ -41,7 +44,10 @@ Quality Assurance Sign-off
 QA Lead sign-off granted with zero blockers.
 `;
 
-    // Target the hidden file input inside dropzone
+    // Open upload modal
+    await page.locator("button:has-text('Upload')").first().click();
+
+    // Target the hidden file input inside dropzone modal
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");
     const fileChooser = await fileChooserPromise;
@@ -68,6 +74,9 @@ QA Lead sign-off granted with zero blockers.
   }) => {
     const corruptText = "Short scan";
 
+    // Open upload modal
+    await page.locator("button:has-text('Upload')").first().click();
+
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");
     const fileChooser = await fileChooserPromise;
@@ -90,6 +99,9 @@ QA Lead sign-off granted with zero blockers.
   }) => {
     // Generate text with 27,000 words (> 35,000 estimated tokens)
     const largeText = "Executive Summary\n" + "compliance metric variance ".repeat(9000);
+
+    // Open upload modal
+    await page.locator("button:has-text('Upload')").first().click();
 
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");
@@ -116,6 +128,9 @@ Executive Summary
 Project is missing major matrices and financial sign-offs.
 Notes on current progress without required sections.
 `;
+
+    // Open upload modal
+    await page.locator("button:has-text('Upload')").first().click();
 
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");
@@ -189,6 +204,9 @@ trailer
 startxref
 628
 %%EOF`;
+
+    // Open upload modal
+    await page.locator("button:has-text('Upload')").first().click();
 
     const fileChooserPromise = page.waitForEvent("filechooser");
     await page.click("text=Drop operational reports here to auto-evaluate");

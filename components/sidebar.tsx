@@ -18,8 +18,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: "Dashboard & Intake", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Scorecards Archive", href: "/scorecards", icon: FileCheck2 },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Scorecards", href: "/scorecards", icon: FileCheck2 },
   { name: "Rule Studio", href: "/rules", icon: Sliders },
   { name: "Ask Archive", href: "/archive", icon: BotMessageSquare },
   { name: "System Health", href: "/settings", icon: Settings },

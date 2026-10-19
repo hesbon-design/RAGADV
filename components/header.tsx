@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Badge } from "@/components/ui/badge";
+import { UploadTriggerButton } from "@/components/dashboard/upload-trigger-button";
 import { Zap } from "lucide-react";
 
 export function Header() {
@@ -44,11 +44,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border/40 bg-background/80 px-6 backdrop-blur-md">
       <div className="flex items-center gap-4">
-        <Badge variant="outline" className="h-7 px-2.5 text-xs font-normal gap-1.5 border-border/60">
-          <span className="size-1.5 rounded-full bg-emerald-500" />
-          <span className="text-muted-foreground">Category:</span>
-          <span className="font-semibold text-foreground">Engineering Operations</span>
-        </Badge>
+        <UploadTriggerButton size="sm" className="h-8 gap-1.5 text-xs font-semibold">
+          Upload
+        </UploadTriggerButton>
       </div>
 
       <div className="flex items-center gap-4">

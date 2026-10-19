@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { UploadTriggerButton } from "@/components/dashboard/upload-trigger-button";
 import {
   FileText,
   CheckCircle2,
@@ -48,11 +49,9 @@ export default async function ScorecardsPage() {
             Complete historical registry of audited operational reports and compliance scores.
           </p>
         </div>
-        <Link href="/dashboard">
-          <Button size="sm" className="gap-2">
-            Upload New Document
-          </Button>
-        </Link>
+        <UploadTriggerButton size="sm">
+          Upload New Document
+        </UploadTriggerButton>
       </div>
 
       <Card className="border-border/60 shadow-xs">

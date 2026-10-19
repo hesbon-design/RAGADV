@@ -42,7 +42,7 @@ test.describe("Single-Operator Authentication & Route Guard", () => {
     // Should redirect to /dashboard
     await page.waitForURL("**/dashboard");
     await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.locator("h1")).toContainText("Review Command Center");
+    await expect(page.locator("h1")).toContainText("Dashboard");
     await expect(page.getByText("Operator Session", { exact: true })).toBeVisible();
   });
 

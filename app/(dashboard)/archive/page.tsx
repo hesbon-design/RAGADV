@@ -115,16 +115,11 @@ export default function ArchivePage() {
       {/* Header & Department Scope */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Ask Archive & Knowledge Reflection
-            </h1>
-            <Badge variant="outline" className="text-[11px] font-semibold border-primary/20 bg-primary/5 text-primary">
-              Hybrid RRF Search
-            </Badge>
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Ask Archive
+          </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Query the permanent institutional memory vault with dense vector cosine similarity and sparse full-text search.
+            Search verified reports and compliance history across departments.
           </p>
         </div>
 
@@ -347,36 +342,16 @@ export default function ArchivePage() {
       {/* Empty Initial State */}
       {!answer && !isLoading && !error && (
         <Card className="border-border/60 bg-muted/15 border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-14 px-6 text-center max-w-lg mx-auto">
-            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+          <CardContent className="flex flex-col items-center justify-center py-14 px-6 text-center max-w-md mx-auto">
+            <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3">
               <BotMessageSquare className="size-6" />
             </div>
             <h3 className="text-base font-semibold tracking-tight">
-              Institutional Memory & Knowledge Archive
+              Institutional Archive
             </h3>
-            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-              Every approved operational report is contextually chunked, vector-embedded with Google Gemini, and indexed with PostgreSQL Full-Text Search.
+            <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+              Ask questions or search across verified operational reports and historical audits.
             </p>
-
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left text-xs">
-              <div className="p-3 rounded-lg border bg-background space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold text-foreground text-[11px]">
-                  <Database className="size-3 text-primary" /> Hybrid Search
-                </div>
-                <p className="text-muted-foreground text-[11px]">
-                  Combines dense semantic cosine similarity with exact keyword matching via RRF (k=60).
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg border bg-background space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold text-foreground text-[11px]">
-                  <Sparkles className="size-3 text-primary" /> Self-Learning Memory
-                </div>
-                <p className="text-muted-foreground text-[11px]">
-                  Synthesizes 3-sentence cross-report reflections on approval and consolidates persistent trends.
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       )}

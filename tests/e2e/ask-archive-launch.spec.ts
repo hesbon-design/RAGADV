@@ -75,8 +75,7 @@ test.describe("Sprint 7: 'Ask Archive' QA Interface & Production Launch", () => 
 
     // 2. Navigate to /archive
     await page.goto("/archive");
-    await expect(page.locator("h1")).toContainText("Ask Archive & Knowledge Reflection");
-    await expect(page.locator("text=Hybrid RRF Search")).toBeVisible();
+    await expect(page.locator("h1")).toContainText("Ask Archive");
 
     // 3. Submit question via prompt input
     const input = page.locator('input[placeholder*="Ask a question across approved reports"]');
