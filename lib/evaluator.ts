@@ -155,8 +155,10 @@ ${documentText.slice(0, 100000)}
 Return structured verdicts with exact citations from the text where violations occur.
 `;
 
+      const geminiModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
       const { object, usage } = await generateObject({
-        model: google("gemini-2.5-flash"),
+        model: google(geminiModel),
         schema: ruleEvaluationSchema,
         prompt,
       });

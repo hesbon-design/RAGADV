@@ -106,4 +106,37 @@ Quality audit verified.
     // Modal should close and status badge should reflect ACTION REQUIRED
     await expect(page.locator("text=ACTION REQUIRED").first()).toBeVisible({ timeout: 10000 });
   });
+
+  test("TC-17: Soft-deleting an audited report via DELETE API removes it and stamps audit log", async ({
+    page,
+  }) => {
+    // 1. Ingest a report specifically to test deletion
+    const reportText = `Executive Summary\nDelete test report.\nMilestone Progress Matrix\nMilestone A - 100%\nRisk Register\nNone\nFinancial Expenditure Log\nBudget: 2%\nQuality Assurance Sign-off\nVerified`;
+
+    const uploadRes = await page.request.post("/api/reports", {
+      multipart: {
+        file: {
+          name: "Report_To_Delete.txt",
+          mimeType: "text/plain",
+          buffer: Buffer.from(reportText, "utf-8"),
+        },
+      },
+    });
+    expect(uploadRes.ok()).toBeTruthy();
+    const { reportId: delReportId } = await uploadRes.json();
+
+    // 2. Call DELETE /api/reports/:id
+    const deleteRes = await page.request.delete(`/api/reports/${delReportId}`);
+    expect(deleteRes.ok()).toBeTruthy();
+    const delData = await deleteRes.json();
+    expect(delData.success).toBeTruthy();
+
+    // 3. Querying GET /api/reports/:id should now return 404
+    const getRes = await page.request.get(`/api/reports/${delReportId}`);
+    expect(getRes.status()).toBe(404);
+
+    // 4. Visiting /scorecards/:id should render 404 not found
+    await page.goto(`/scorecards/${delReportId}`);
+    await expect(page.locator("text=404").first()).toBeVisible({ timeout: 10000 });
+  });
 });

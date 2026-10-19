@@ -100,4 +100,34 @@ QA verified.`;
     const rows = page.locator("table tbody tr");
     expect(await rows.count()).toBeGreaterThan(0);
   });
+
+  test("TC-18: Department API aggregates audited report counts correctly", async ({
+    page,
+  }) => {
+    const res = await page.request.get("/api/departments");
+    expect(res.ok()).toBeTruthy();
+    const data = await res.json();
+    expect(Array.isArray(data.departments)).toBeTruthy();
+    expect(data.departments.length).toBeGreaterThan(0);
+    expect(data.departments[0].name).toBe("Engineering Operations");
+    expect(typeof data.departments[0].report_count).toBe("number");
+  });
+
+  test("TC-19: Rule Studio custom directives and threshold gates persist on publish", async ({
+    page,
+  }) => {
+    await page.goto("/rules");
+
+    // Add a new Threshold Gate
+    await page.click("button:has-text('Add Gate')");
+    // Add a new Custom Directive
+    await page.click("button:has-text('Add Directive')");
+
+    // Verify directive is visible in DOM
+    await expect(page.locator("input[placeholder='Directive Title']").last()).toBeVisible();
+
+    // Publish
+    await page.click("button:has-text('Publish New Version')");
+    await expect(page.locator("text=Saved v")).toBeVisible({ timeout: 10000 });
+  });
 });

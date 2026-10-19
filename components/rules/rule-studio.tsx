@@ -142,6 +142,64 @@ export function RuleStudio({ initialDepartment, initialProfile }: RuleStudioProp
     setRedFlagKeywords(redFlagKeywords.filter((k) => k !== kw));
   };
 
+  const handleUpdateThreshold = (
+    id: string,
+    field: string,
+    value: string | number | boolean
+  ) => {
+    setThresholdRules((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
+    );
+  };
+
+  const handleAddThreshold = () => {
+    const newId = `thresh-${Date.now().toString(36)}`;
+    setThresholdRules((prev) => [
+      ...prev,
+      {
+        id: newId,
+        metric_name: "New Variance Metric",
+        operator: "<=",
+        target_value: 10,
+        unit: "%",
+        penalty: 15,
+        is_critical: false,
+      },
+    ]);
+  };
+
+  const handleRemoveThreshold = (id: string) => {
+    setThresholdRules((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const handleUpdateCustomRule = (
+    id: string,
+    field: string,
+    value: string | number
+  ) => {
+    setCustomRules((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
+    );
+  };
+
+  const handleAddCustomRule = () => {
+    const newId = `custom-${Date.now().toString(36)}`;
+    setCustomRules((prev) => [
+      ...prev,
+      {
+        id: newId,
+        title: "New Evaluation Directive",
+        description: "Specify criteria the evaluator must check in the report narrative.",
+        weight: 10,
+        severity: "HIGH",
+      },
+    ]);
+  };
+
+  const handleRemoveCustomRule = (id: string) => {
+    setCustomRules((prev) => prev.filter((r) => r.id !== id));
+  };
+
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
@@ -273,38 +331,114 @@ export function RuleStudio({ initialDepartment, initialProfile }: RuleStudioProp
 
         {/* 2. Quantitative Threshold Gates */}
         <Card className="border-border/60 shadow-xs">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Sliders className="size-4 text-primary" />
-              <CardTitle className="text-base font-semibold">
-                Quantitative Threshold Gates
-              </CardTitle>
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sliders className="size-4 text-primary" />
+                <CardTitle className="text-base font-semibold">
+                  Quantitative Threshold Gates
+                </CardTitle>
+              </div>
+              <CardDescription className="text-xs mt-0.5">
+                Numeric tolerance ceilings extracted from document matrices and tables.
+              </CardDescription>
             </div>
-            <CardDescription className="text-xs">
-              Numeric tolerance ceilings extracted from document matrices and tables.
-            </CardDescription>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddThreshold}
+              className="h-8 text-xs gap-1"
+            >
+              <Plus className="size-3.5" />
+              Add Gate
+            </Button>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
-              {thresholdRules.map((rule, idx) => (
+              {thresholdRules.map((rule) => (
                 <div
                   key={rule.id}
-                  className="p-3.5 rounded-lg border bg-card/60 space-y-2 text-xs"
+                  className="p-3.5 rounded-lg border bg-card/60 space-y-3 text-xs"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-foreground">{rule.metric_name}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <Input
+                      value={rule.metric_name}
+                      onChange={(e) => handleUpdateThreshold(rule.id, "metric_name", e.target.value)}
+                      placeholder="Metric Name"
+                      className="h-7 text-xs font-semibold"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveThreshold(rule.id)}
+                      className="text-muted-foreground hover:text-destructive p-1 rounded"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2">
+                    <div>
+                      <label className="text-[10px] text-muted-foreground block mb-0.5">Operator</label>
+                      <select
+                        value={rule.operator}
+                        onChange={(e) => handleUpdateThreshold(rule.id, "operator", e.target.value)}
+                        className="w-full h-7 rounded-md border border-input bg-background px-1 text-xs font-mono"
+                      >
+                        <option value="<=">&le; (Max)</option>
+                        <option value=">=">&ge; (Min)</option>
+                        <option value="<">&lt;</option>
+                        <option value=">">&gt;</option>
+                        <option value="==">==</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-muted-foreground block mb-0.5">Target</label>
+                      <Input
+                        type="number"
+                        value={rule.target_value}
+                        onChange={(e) => handleUpdateThreshold(rule.id, "target_value", parseFloat(e.target.value) || 0)}
+                        className="h-7 text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-muted-foreground block mb-0.5">Unit</label>
+                      <Input
+                        value={rule.unit}
+                        onChange={(e) => handleUpdateThreshold(rule.id, "unit", e.target.value)}
+                        className="h-7 text-xs font-mono"
+                        placeholder="%, days"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-muted-foreground block mb-0.5">Penalty</label>
+                      <Input
+                        type="number"
+                        value={rule.penalty}
+                        onChange={(e) => handleUpdateThreshold(rule.id, "penalty", parseInt(e.target.value, 10) || 0)}
+                        className="h-7 text-xs font-mono text-destructive"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-border/40">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={rule.is_critical}
+                        onChange={(e) => handleUpdateThreshold(rule.id, "is_critical", e.target.checked)}
+                        className="rounded border-input text-primary size-3.5"
+                      />
+                      <span>Critical Gate (Fails report)</span>
+                    </label>
                     {rule.is_critical && (
-                      <Badge variant="destructive" className="text-[10px] uppercase font-bold">
-                        Critical Gate
+                      <Badge variant="destructive" className="text-[9px] uppercase font-bold py-0 h-4">
+                        Critical
                       </Badge>
                     )}
-                  </div>
-                  <div className="flex items-center gap-3 text-muted-foreground font-mono">
-                    <span>
-                      Condition: {rule.operator} {rule.target_value}
-                      {rule.unit}
-                    </span>
-                    <span>Penalty: -{rule.penalty} pts</span>
                   </div>
                 </div>
               ))}
@@ -370,6 +504,98 @@ export function RuleStudio({ initialDepartment, initialProfile }: RuleStudioProp
                 Add Tripwire
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* 4. Custom Evaluator Directives */}
+        <Card className="border-border/60 shadow-xs">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Sliders className="size-4 text-primary" />
+                <CardTitle className="text-base font-semibold">
+                  Custom Evaluator Directives
+                </CardTitle>
+              </div>
+              <CardDescription className="text-xs mt-0.5">
+                Natural language criteria instructions evaluated by the Gemini auditor model.
+              </CardDescription>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddCustomRule}
+              className="h-8 text-xs gap-1"
+            >
+              <Plus className="size-3.5" />
+              Add Directive
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {customRules.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-4 text-center">
+                No custom directives configured. Add one to guide the LLM evaluation.
+              </p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {customRules.map((rule) => (
+                  <div
+                    key={rule.id}
+                    className="p-3.5 rounded-lg border bg-card/60 space-y-2.5 text-xs"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <Input
+                        value={rule.title}
+                        onChange={(e) => handleUpdateCustomRule(rule.id, "title", e.target.value)}
+                        placeholder="Directive Title"
+                        className="h-7 text-xs font-semibold"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomRule(rule.id)}
+                        className="text-muted-foreground hover:text-destructive p-1 rounded"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+
+                    <div>
+                      <textarea
+                        value={rule.description}
+                        onChange={(e) => handleUpdateCustomRule(rule.id, "description", e.target.value)}
+                        placeholder="Detailed requirement or instructions..."
+                        rows={2}
+                        className="w-full rounded-md border border-input bg-background p-2 text-xs font-sans resize-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <label className="text-[10px] text-muted-foreground">Penalty:</label>
+                        <Input
+                          type="number"
+                          value={rule.weight}
+                          onChange={(e) => handleUpdateCustomRule(rule.id, "weight", parseInt(e.target.value, 10) || 0)}
+                          className="h-6 w-16 text-xs font-mono text-destructive"
+                        />
+                        <span className="text-[10px] text-muted-foreground">pts</span>
+                      </div>
+
+                      <select
+                        value={rule.severity}
+                        onChange={(e) => handleUpdateCustomRule(rule.id, "severity", e.target.value)}
+                        className="h-6 rounded-md border border-input bg-background px-1.5 text-[10px] font-semibold uppercase"
+                      >
+                        <option value="CRITICAL">CRITICAL</option>
+                        <option value="HIGH">HIGH</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
